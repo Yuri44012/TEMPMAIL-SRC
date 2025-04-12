@@ -1,1 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SafeMode Temp Mail</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+    .container {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      text-align: center;
+    }
+    button {
+      background: #4caf50;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .email-box {
+      background: #333;
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      word-break: break-word;
+    }
+    .message {
+      background: #444;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SafeMode TempMail</h1>
+    <button onclick="generateEmail()">Generate Temp Email</button>
+    <div class="email-box" id="emailBox">Your email will appear here</div>
 
+    <h3>Inbox</h3>
+    <div id="inbox"></div>
+  </div>
+
+  <script>
+    let currentEmail = '';
+
+    function generateEmail() {
+      fetch('/generate')
+        .then(res => res.json())
+        .then(data => {
+          currentEmail = data.email;
+          document.getElementById('emailBox').textContent = currentEmail;
+          fetchInbox();
+        });
+    }
+
+    function fetchInbox() {
+      if (!currentEmail) return;
+      const nameOnly = currentEmail.split('@')[0];
+      fetch('/inbox/' + nameOnly)
+        .then(res => res.json())
+        .then(data => {
+          const inbox = document.getElementById('inbox');
+          inbox.innerHTML = '';
+          data.inbox.reverse().forEach(msg => {
+            const div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = `<strong>${msg.subject}</strong><br>${msg.body}`;
+            inbox.appendChild(div);
+          });
+        });
+    }
+
+    setInterval(fetchInbox, 5000); // Auto-refresh inbox
+  </script>
+</body>
+</html>
